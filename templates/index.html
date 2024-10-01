@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcVote</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        form {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 4px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            form {
+                padding: 15px;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .result-table {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+        }
+
+        .info {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 10px;
+            margin: 20px 0;
+        }
+    </style>
+    <script>
+        function gerarVotosAleatorios() {
+            const partidos = {{ partidos | tojson }};
+            const totalVotos = 30001;
+            const votos = {};
+            const minVotos = 6000;
+
+            let restante = totalVotos;
+            const numPartidos = Object.keys(partidos).length;
+            const partidoComMinimo = Object.keys(partidos)[Math.floor(Math.random() * numPartidos)];
+            votos[partidoComMinimo] = minVotos;
+            restante -= minVotos;
+
+            // Gera votos aleatórios para os outros partidos
+            for (const partido in partidos) {
+                if (partido !== partidoComMinimo) {
+                    const maxVotosPartido = Math.floor(restante / (numPartidos - 1));
+                    const minVotosPartido = Math.floor(Math.random() * maxVotosPartido) || 0;
+                    votos[partido] = minVotosPartido;
+                    restante -= minVotosPartido;
+                }
+            }
+
+            // Distribui o restante de forma aleatória
+            while (restante > 0) {
+                const partidoAleatorio = Object.keys(partidos)[Math.floor(Math.random() * numPartidos)];
+                if (partidoAleatorio !== partidoComMinimo || votos[partidoComMinimo] < totalVotos) {
+                    votos[partidoAleatorio]++;
+                    restante--;
+                }
+            }
+
+            // Atualiza os inputs com os valores gerados
+            for (const partido in votos) {
+                document.querySelector(`input[name="${partido}"]`).value = votos[partido];
+            }
+        }
+
+        function validarSomaVotos(event) {
+            const partidos = {{ partidos | tojson }};
+            const totalVotos = 30001;
+            let somaVotos = 0;
+
+            for (const partido in partidos) {
+                const votosPartido = parseInt(document.querySelector(`input[name="${partido}"]`).value) || 0;
+                somaVotos += votosPartido;
+            }
+
+            if (somaVotos !== totalVotos) {
+                event.preventDefault();
+                alert(`A soma total dos votos deve ser exatamente ${totalVotos}. Atual: ${somaVotos}.`);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>CalcVote - 2024</h1>
+    
+
+    <div class="info">
+        <p>Este sistema permite que você insira a quantidade de votos recebidos por cada partido e calcula a distribuição dos vereadores eleitos com base nesses dados.</p>
+        <p>O quociente eleitoral foi calculado com base no número de votos válidos na eleição de 2020.</p>
+    </div>
+
+    <form method="POST" onsubmit="validarSomaVotos(event)">
+        <table>
+            <thead>
+                <tr>
+                    <th>Partido</th>
+                    <th>Votos Imaginários</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for partido, candidatos in partidos.items() %}
+                <tr>
+                    <td>{{ partido }}</td>
+                    <td><input type="number" name="{{ partido }}" min="0" required></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Calcular</button>
+        <button type="button" onclick="gerarVotosAleatorios()">Gerar Votos Aleatórios</button>
+    </form>
+
+    {% if resultados %}
+    <div class="result-table">
+        <h2>Resultados</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Partido</th>
+                    <th>Candidato</th>
+                    <th>Votos</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for partido, vereadores in resultados.items() %}
+                    {% for vereador in vereadores %}
+                        <tr>
+                            <td>{{ vereador.partido }}</td>
+                            <td>{{ vereador.candidato }}</td>
+                            <td>{{ vereador.votos }}</td>
+                            <td>{% if vereador.sobras %}Eleito (Soma){% else %}Eleito{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="4" style="border-top: 2px solid #000;"></td> <!-- Linha de separação entre partidos -->
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <footer>
+        <p>&copy; 2024 Versão 1.0.</p>
+    </footer>
+</body>
+</html>

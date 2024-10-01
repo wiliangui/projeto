@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados das Eleições - CalcVote</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .result-table {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .quadrados {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .quadro {
+            background: #e7f3fe;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .quadro:hover {
+            transform: scale(1.05);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+        }
+
+        .info {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 10px;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .sobras {
+            color: #e64a19;
+            font-weight: bold;
+        }
+
+        .descricao {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resultados da consulta</h1>
+
+    <div class="info">
+        <p>Os resultados a seguir mostram a distribuição dos vereadores eleitos com base na quantidade de votos recebidos por cada partido.</p>
+        <p>Os vereadores foram eleitos considerando que cada um deve ter pelo menos 10% do quociente eleitoral.</p>
+    </div>
+
+    <div class="result-table">
+        <h2>Quocientes Partidários</h2>
+        <div class="quadrados">
+            {% for partido, dados in coeficientes.items() %}
+                <div class="quadro">
+                    <h3>{{ partido }}</h3>
+                    <p>{{ dados.porcentagem | round(2) }}% - {{ dados.cadeiras }} cadeiras</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <a href="/" class="back-button">Voltar</a>
+
+    <footer>
+        <p>&copy; 2024 Versão 1.0.</p>
+    </footer>
+</body>
+</html>
